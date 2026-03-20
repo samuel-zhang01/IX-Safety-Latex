@@ -1,0 +1,32 @@
+\section{Background}
+\label{sec:background}
+
+\subsection{Learning to Defer}
+\label{sec:bg_l2d}
+
+The learning-to-defer framework jointly trains a classifier $h: \mathcal{X} \to \mathcal{Y}$ and a rejector $r: \mathcal{X} \to \{0, 1\}$ that decides whether each input should be deferred to a human expert $M$ \citep{madras2018predict}. \citet{mozannar2020consistent} showed that this setup can be reduced to a $(K{+}1)$-class classification problem. For binary classification ($K=2$), the system outputs $g: \mathcal{X} \to \RR^3$ with components for class~0 (predict not-fraud), class~1 (predict fraud), and $\perp$ (defer). The surrogate cross-entropy loss is:
+\begin{equation}
+    \tilde{L}_{\text{CE}}(g, \xx, y, m) = -\sum_{j \in \{0,1,\perp\}} c_j \log \frac{e^{g_j(\xx)}}{\sum_k e^{g_k(\xx)}},
+    \label{eq:mozannar_loss}
+\end{equation}
+where the cost targets encode misclassification penalties: $c_0 = \mathbf{1}[y{=}1]$ penalises predicting class~0 (not-fraud) when the true label is fraud, $c_1 = \mathbf{1}[y{=}0]$ penalises predicting class~1 (fraud) when the claim is legitimate, and $c_\perp = \ell_{\text{exp}}(\xx, y, M) = \PP(M(\xx) \neq y)$ is the expert's expected 0-1 loss on the deferred instance. This means the correct action, the one with zero misclassification cost, gets zero weight, which encourages the model to assign it high probability. Minimising this surrogate gives a Bayes-consistent deferral policy \citep{mozannar2020consistent}.
+
+\subsection{Conditional Value-at-Risk}
+\label{sec:bg_cvar}
+
+For a random loss $Z$, the Conditional Value-at-Risk at tail level $\delta \in (0,1]$ is:
+\begin{equation}
+    \cvar_\delta(Z) = \frac{1}{\delta} \EE\bigl[Z \cdot \mathbf{1}\{Z \geq \var_\delta(Z)\}\bigr],
+    \label{eq:cvar}
+\end{equation}
+where $\var_\delta(Z) = \inf\{z : \PP(Z \leq z) \geq 1 - \delta\}$. CVaR is coherent, sub-additive, and convex \citep{rockafellar2000optimization}, and it has been used to control catastrophic tail risks in risk-sensitive RL \citep{tamar2015optimizing} and safety-critical offline RL \citep{killian2023risk}.
+
+\subsection{Bayesian Uncertainty for Classification}
+\label{sec:bg_bayes}
+
+Given class-conditional densities $p(\xx | y{=}1)$ and $p(\xx | y{=}0)$ estimated via KDE, the posterior fraud probability after observing features $(x_1, \ldots, x_F)$ is obtained through sequential Bayesian updating:
+\begin{equation}
+    \pi_k = \frac{\pi_{k-1} \cdot p(x_k | y{=}1)}{\pi_{k-1} \cdot p(x_k | y{=}1) + (1 - \pi_{k-1}) \cdot p(x_k | y{=}0)},
+    \label{eq:bayes_update}
+\end{equation}
+starting from the prior $\pi_0 = \PP(y{=}1)$. This assumes conditional independence given the class label (Assumption~A1, \Cref{sec:exp_setup}). The binary entropy $H(\pi) = -\pi \log_2 \pi - (1{-}\pi) \log_2 (1{-}\pi)$ measures predictive uncertainty.

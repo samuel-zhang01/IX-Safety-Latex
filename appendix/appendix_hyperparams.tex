@@ -1,0 +1,59 @@
+\clearpage
+\raggedbottom
+\section{Hyperparameter Settings}
+\label{app:hyperparams}
+
+\vspace{-0.5em}
+\begin{table}[H]
+\caption{Hyperparameter settings for all models.}
+\label{tab:hyperparams}
+\begin{center}
+\begin{small}
+\begin{tabular}{lll}
+\toprule
+Component & Parameter & Value \\
+\midrule
+\multicolumn{3}{l}{\textit{Base classifier (XGBoost)}} \\
+& \texttt{n\_estimators} & 200 \\
+& \texttt{max\_depth} & 5 \\
+& \texttt{learning\_rate} & 0.1 \\
+& \texttt{eval\_metric} & logloss \\
+\midrule
+\multicolumn{3}{l}{\textit{Calibration}} \\
+& Method & Isotonic regr. (3-fold) \\
+\midrule
+\multicolumn{3}{l}{\textit{Bayesian uncertainty}} \\
+& KDE bandwidth & Scott's rule \\
+& Prior fraud rate $\pi_0$ & 0.247 \\
+& Entropy thresh.\ $\tau$ & 0.90 \\
+& Features used & 4 (causal subset) \\
+\midrule
+\multicolumn{3}{l}{\textit{Deferral parameters}} \\
+& CVaR level $\delta$ & 0.10 \\
+& Penalty weight $\lambda$ & 0.5 \\
+& Confidence thresh.\ $\kappa$ & 0.65 \\
+\midrule
+\multicolumn{3}{l}{\textit{Investigator}} \\
+& Base accuracy $\alpha$ & 0.85 \\
+& Sensitivity & $\{.70,.80,.90,.95\}$ \\
+\midrule
+\multicolumn{3}{l}{\textit{Off-policy evaluation}} \\
+& IS clipping $w_{\max}$ & 10 \\
+& Bootstrap (OPE / CIs) & 500 / 2{,}000 \\
+& Confidence level & 95\% \\
+\midrule
+\multicolumn{3}{l}{\textit{Data split}} \\
+& Train/test & 80/20 (stratified) \\
+& Random state & 42 \\
+\bottomrule
+\end{tabular}
+\end{small}
+\end{center}
+\vspace{0.5em}
+\small
+\textbf{McNemar's test.} Pairwise comparisons use McNemar's test with continuity correction: $\chi^2 = (|b-c|-1)^2 / (b+c)$, where $b$ counts cases where model A is correct and B is wrong, and $c$ the reverse. Significance threshold $p < 0.05$.
+
+\textbf{Cross-validation.} 5-fold stratified CV with metrics: F1, accuracy, and ROC-AUC. Results: mean $\pm$ std.
+
+\textbf{Additional baseline figures.} ROC curves, calibration curves, CV boxplots, McNemar heatmap, propensity scores, and feature importance plots are provided as supplementary figures.
+\end{table}

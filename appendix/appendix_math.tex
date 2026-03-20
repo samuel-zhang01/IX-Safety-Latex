@@ -1,0 +1,123 @@
+\section{Mathematical Derivations}
+\label{app:math}
+
+\subsection{Proof of \Cref{prop:cvar_bound}}
+
+\begin{proof}
+Let $\ell_1, \ldots, \ell_N$ be the losses on the full dataset, with sorted values $\ell_{(1)} \geq \cdots \geq \ell_{(N)}$, and let $k = \lceil \delta N \rceil$. The unconditional empirical CVaR is:
+\[
+\widehat{\cvar}_\delta^{\text{all}} = \frac{1}{k} \sum_{i=1}^{k} \ell_{(i)}.
+\]
+
+Let $\mathcal{S}_d \subseteq \{1, \ldots, N\}$ denote the indices deferred by the rejector $r$, with $|\mathcal{S}_d| = m$, and $\mathcal{S}_r = \{1, \ldots, N\} \setminus \mathcal{S}_d$ the retained set with $N_r = N - m$.
+
+The proposition assumes that every deferred sample has loss $\ell_i \geq \var_\delta(\ell)$, i.e., $\mathcal{S}_d \subseteq \{i : \ell_i \text{ is among the } k \text{ largest losses}\}$. Under this condition, the $m$ removed losses include only elements from $\{\ell_{(1)}, \ldots, \ell_{(k)}\}$.
+
+The retained losses $\{\ell_j^r\}_{j=1}^{N_r}$, when sorted as $\ell^r_{(1)} \geq \cdots \geq \ell^r_{(N_r)}$, satisfy:
+\[
+\ell^r_{(i)} \leq \ell_{(i+m)} \quad \text{for all } i = 1, \ldots, \min(k', N_r),
+\]
+where $k' = \lceil \delta N_r \rceil$, since the $m$ largest elements have been removed.
+
+For the retained CVaR:
+\[
+\widehat{\cvar}_\delta^{\text{retained}} = \frac{1}{k'} \sum_{i=1}^{k'} \ell^r_{(i)} \leq \frac{1}{k'} \sum_{i=1}^{k'} \ell_{(i+m)}.
+\]
+
+Since $\ell_{(i+m)} \leq \ell_{(i)}$ for all $i$ (the sorted sequence is non-increasing) and $k' \leq k$ (because $N_r \leq N$ and $\delta$ is the same):
+\[
+\frac{1}{k'}\sum_{i=1}^{k'} \ell_{(i+m)} \leq \frac{1}{k'}\sum_{i=1}^{k'} \ell_{(i)} \leq \frac{1}{k}\sum_{i=1}^{k} \ell_{(i)} = \widehat{\cvar}_\delta^{\text{all}},
+\]
+where the last inequality uses $k' \leq k$ and the fact that adding terms from a non-increasing sequence to the sum and dividing by a larger denominator cannot increase the average.
+\end{proof}
+
+\paragraph{When does the condition hold?} The proposition requires that deferral targets the upper tail of the loss distribution. This holds when the uncertainty signal $U(\xx)$ is monotonically related to the classifier's expected loss---i.e., the classifier is more uncertain on samples it is more likely to misclassify. We verify this empirically: in our experiments, the Spearman rank correlation between posterior entropy $H(\pi_F)$ and 0-1 loss is $\rho > 0.3$ ($p < 0.001$), confirming that high-entropy claims are disproportionately misclassified.
+
+\subsection{Lagrangian Duality}
+
+The CVaR-constrained deferral problem (\Cref{eq:cmdp}) admits a Lagrangian relaxation. Define the constrained problem:
+\begin{equation}
+    \max_{r} \; \mathrm{Acc}_{\mathrm{sys}}(h, r) \quad \text{s.t.} \quad \cvar_\delta\bigl[\ell(\xx, y, h(\xx)) \cdot \mathbf{1}\{r(\xx) = 0\}\bigr] \leq \epsilon.
+\end{equation}
+
+The Lagrangian is:
+\[
+\mathcal{L}(r, \lambda) = \mathrm{Acc}_{\mathrm{sys}}(h, r) + \lambda\bigl(\epsilon - \cvar_\delta[\cdot]\bigr).
+\]
+
+Slater's constraint qualification holds in this problem: the trivial rejector $r \equiv 1$ (defer everything) achieves $\cvar_\delta = 0 < \epsilon$ for any $\epsilon > 0$, since no predictions are retained. This verifies the existence of a strictly feasible point, ensuring strong duality:
+\[
+\max_{r} \min_{\lambda \geq 0} \mathcal{L}(r, \lambda) = \min_{\lambda \geq 0} \max_{r} \mathcal{L}(r, \lambda),
+\]
+and the optimal $\lambda^*$ recovers the constraint boundary $\cvar_\delta = \epsilon$. The objective in \Cref{eq:cvar_l2d} with a specific $\lambda$ corresponds to a particular risk tolerance $\epsilon$.
+
+\subsection{Sequential Bayesian Update}
+
+Starting from Bayes' rule for the binary case with the conditional independence assumption (A1):
+\begin{align}
+\pi_k &= P(y=1 \mid x_1, \ldots, x_k) \label{eq:bayes_full_1}\\
+&= \frac{P(x_k \mid y=1) \cdot P(y=1 \mid x_1, \ldots, x_{k-1})}{P(x_k \mid x_1, \ldots, x_{k-1})} \label{eq:bayes_full_2}\\
+&= \frac{P(x_k \mid y=1) \cdot \pi_{k-1}}{P(x_k \mid y=1) \cdot \pi_{k-1} + P(x_k \mid y=0) \cdot (1-\pi_{k-1})}. \label{eq:bayes_full_3}
+\end{align}
+
+The transition from \Cref{eq:bayes_full_1} to \Cref{eq:bayes_full_2} uses the conditional independence assumption: $P(x_k \mid y, x_1, \ldots, x_{k-1}) = P(x_k \mid y)$. Without this assumption, the update would require modelling the full joint distribution $P(x_1, \ldots, x_F \mid y)$, which is intractable with KDE in moderate dimensions.
+
+The class-conditional densities $P(x_k \mid y)$ are estimated non-parametrically via Gaussian KDE with bandwidth selected by Scott's rule: $h_k = \hat{\sigma}_k \cdot n_y^{-1/5}$, where $\hat{\sigma}_k$ is the standard deviation of feature $k$ within class $y$ and $n_y$ is the class count.
+
+\paragraph{Convergence.} Under regularity conditions on the KDE estimator (bounded density, sufficient samples), the posterior $\pi_F$ converges to the Bayes-optimal posterior \textit{under the naive Bayes model} as $n \to \infty$ by the consistency of KDE \citep{silverman1986density}. We emphasise that this is the optimal posterior under the misspecified model (A1), not the true Bayes-optimal posterior. The entropy $H(\pi_F)$ is therefore a consistent uncertainty estimate under the naive Bayes assumption.
+
+\subsection{KL Divergence for Feature Ranking}
+
+The KL divergence between class-conditional densities (\Cref{eq:kl_feature}) measures the expected log-likelihood ratio:
+\begin{align}
+D_{\text{KL}}^{(k)} &= \EE_{x \sim p(\cdot | y=1)}\left[\log \frac{p(x_k | y=1)}{p(x_k | y=0)}\right] \\
+&= \int p(x_k | y=1) \log \frac{p(x_k | y=1)}{p(x_k | y=0)} \, dx_k.
+\end{align}
+
+Features with high $D_{\text{KL}}^{(k)}$ produce larger posterior updates and thus more decisive deferral signals. We also compute the symmetrised divergence $D_{\text{JS}}^{(k)} = \frac{1}{2}D_{\text{KL}}(p_1 \| m) + \frac{1}{2}D_{\text{KL}}(p_0 \| m)$ with $m = \frac{1}{2}(p_0 + p_1)$ for robustness, since $D_{\text{JS}}$ is bounded $\in [0, \log 2]$.
+
+\subsection{McNemar's Test for Model Comparison}
+
+For two classifiers $A$ and $B$, define the $2 \times 2$ contingency table: $b = |\{i : A \text{ correct}, B \text{ wrong}\}|$ and $c = |\{i : A \text{ wrong}, B \text{ correct}\}|$. McNemar's test with continuity correction:
+\begin{equation}
+\chi^2 = \frac{(|b - c| - 1)^2}{b + c} \sim \chi^2_1 \quad \text{under } H_0: b = c.
+\end{equation}
+We apply this test to the classifier's predictions on the retained set (not the hybrid system predictions), to avoid conflating classifier performance with the synthetic investigator.
+
+\subsection{Spectral Risk Measures}
+
+CVaR belongs to the class of \textit{spectral risk measures}. A spectral risk measure is defined by a distortion function $g : [0,1] \to [0,1]$ (non-decreasing, $g(0) = 0$, $g(1) = 1$):
+\begin{equation}
+\rho_g(L) = \int_0^1 F_L^{-1}(u) \, dg(u),
+\end{equation}
+where $F_L^{-1}$ is the quantile function of the loss $L$ and the integral is in the Lebesgue--Stieltjes sense (accommodating distortions with kinks, such as CVaR). The measure is \textit{coherent} if and only if $g$ is convex.
+
+Three choices compared empirically (\Cref{sec:exp_cost}):
+\begin{align}
+\text{CVaR:} \quad g_{\delta}(u) &= \min(u/\delta, 1), \\
+\text{Wang:} \quad g_W(u) &= \Phi(\Phi^{-1}(u) + \eta), \\
+\text{Dual-power:} \quad g_D(u) &= 1 - (1-u)^p,
+\end{align}
+where $\Phi$ is the standard normal CDF, $\eta > 0$ is a risk-aversion parameter, and $p \geq 1$ controls tail emphasis. CVaR concentrates weight on the worst-$\delta$ fraction, while the Wang transform provides smooth reweighting. CVaR (with $g$ convex) and the Wang transform (convex for $\eta > 0$) are coherent. The dual-power distortion $g_D$ is concave for $p > 1$, so it defines a valid distortion risk measure but is not coherent in the spectral sense; we include it for empirical comparison.
+
+\subsection{Cost-Sensitive Loss}
+
+The asymmetric cost framework assigns different penalties to false positives (FP) and false negatives (FN):
+\begin{equation}
+\mathcal{C}(\hat{y}, y) = c_{\text{FP}} \cdot \mathbf{1}[\hat{y} = 1, y = 0] + c_{\text{FN}} \cdot \mathbf{1}[\hat{y} = 0, y = 1].
+\end{equation}
+In insurance fraud, $c_{\text{FN}} \gg c_{\text{FP}}$ because undetected fraud results in claim payouts. The normalised expected cost is $\mathbb{E}[\mathcal{C}] / N$. Our deferral mechanism reduces this cost by routing the most uncertain claims---which are disproportionately fraudulent---to human investigators with lower FN rates.
+
+\subsection{Off-Policy Estimator Definitions}
+
+Let $\pi_b$ be the behaviour policy, $\pi_e$ the evaluation policy, $\hat{r}$ a fitted reward model, and $w_i = \min(\pi_e(a_i | \xx_i) / \pi_b(a_i | \xx_i),\; w_{\max})$ the clipped importance weight.
+
+\textbf{Direct Method (DM):} $\hat{V}^{\text{DM}} = \frac{1}{N}\sum_i \hat{r}(\xx_i, \pi_e(\xx_i))$.
+
+\textbf{Self-Normalised Importance Sampling (SNIPS):}
+$\hat{V}^{\text{SNIPS}} = \sum_i w_i r_i \,/\, \sum_i w_i$.
+
+\textbf{Doubly Robust (DR):}
+$\hat{V}^{\text{DR}} = \frac{1}{N}\sum_i \bigl[\hat{r}(\xx_i, \pi_e(\xx_i)) + w_i (r_i - \hat{r}(\xx_i, a_i))\bigr]$.
+
+\noindent DR is consistent if either $\hat{r}$ or the importance weights are correctly specified \citep{dudik2011doubly}.

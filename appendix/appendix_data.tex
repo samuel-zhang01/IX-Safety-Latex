@@ -1,0 +1,14 @@
+\section{Dataset Statistics}
+\label{app:data}
+
+The insurance fraud claims dataset contains $N = 1{,}000$ records with 39 raw features.
+
+\paragraph{Missing values.} Three features contain missing values encoded as ``?'': \texttt{collision\_type} (178, 17.8\%), \texttt{property\_damage} (360, 36.0\%), and \texttt{police\_report\_available} (343, 34.3\%). All are imputed with the mode value.
+
+\paragraph{Class balance.} The target \texttt{fraud\_reported} is imbalanced: 24.7\% fraud ($Y$), 75.3\% legitimate ($N$). All experiments use stratified splits to preserve this ratio.
+
+\paragraph{Engineered features.} Three derived features are computed: (i) \texttt{policy\_age\_days} = days between policy bind date and incident date; (ii) \texttt{claim\_to\_premium\_ratio} = total claim amount / annual premium; (iii) \texttt{injury\_to\_vehicle\_ratio} = injury claim / (vehicle claim + 1).
+
+\paragraph{Key numeric features.} \texttt{total\_claim\_amount} ranges from 100 to 114{,}920 (mean 52{,}761, std 26{,}085). \texttt{months\_as\_customer} ranges from 0 to 479 (mean 202). \texttt{policy\_annual\_premium} ranges from 433 to 2{,}048 (mean 1{,}257). \texttt{incident\_hour\_of\_the\_day} ranges from 0 to 23 (mean 11.6).
+
+\paragraph{Key categorical features.} \texttt{incident\_type}: Single Vehicle Collision (37\%), Multi-vehicle (34\%), Vehicle Theft (17\%), Parked Car (12\%). \texttt{incident\_severity}: Major (41\%), Minor (31\%), Total Loss (17\%), Trivial (11\%).

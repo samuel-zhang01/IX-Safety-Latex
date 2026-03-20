@@ -1,0 +1,10 @@
+*.fls
+*.aux
+*.bbl
+*.blg
+*.out
+*.out
+icml2025/
+.claude/
+*.fdb_latexmk
+*.log

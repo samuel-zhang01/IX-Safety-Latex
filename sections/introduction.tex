@@ -1,0 +1,15 @@
+\section{Introduction}
+\label{sec:intro}
+
+Insurance fraud is estimated to cost the U.S.\ economy \$308.6 billion a year, with fraudulent claims making up 5--10\% of all property and casualty claims \citep{coalition2022fraud}. Supervised classifiers such as gradient boosted trees, logistic regression, and neural networks have become standard tools for detecting fraud \citep{phua2010comprehensive}. But these models still have to make a yes-or-no decision on every claim, even when they are highly uncertain.
+
+The \textit{learning to defer} (L2D) paradigm tackles this problem by giving the classifier a deferral option, so uncertain cases can be passed to a human expert instead \citep{madras2018predict, mozannar2020consistent}. This is especially well-suited to fraud detection. The costs of false negatives, where fraud is missed, and false positives, where legitimate claims are wrongly denied, are very different, and human investigators can add valuable domain knowledge that the model does not have.
+
+Standard L2D methods, however, optimise \textit{expected} loss, which means they treat all retained errors the same way. In fraud detection, the \textit{distribution} of those errors also matters. A small number of high-value missed claims can account for a large share of the total loss. So deferral should focus not only on uncertainty, but also on the claims that contribute most to \textit{tail risk}.
+
+We make the following contributions:
+\begin{enumerate}
+    \item We propose \textbf{Safe-L2D-Fraud}, a two-stage framework that separates classifier training from deferral optimisation, and selects the deferral threshold using a CVaR-penalised objective (\Cref{def:cvar_l2d}).
+    \item We combine \textbf{Bayesian posterior entropy} with calibrated classifier confidence for deferral, using a domain-informed DAG to limit uncertainty estimation to structurally plausible features.
+    \item We present a \textbf{proof-of-concept evaluation} on a small benchmark dataset that demonstrates the framework's mechanics, including cost-sensitive analysis and ablations, accompanied by a frank assessment of \textbf{limitations} including small sample size, distribution shift, and adversarial non-stationarity. We view the primary contribution as the framework design rather than the specific empirical numbers.
+\end{enumerate}

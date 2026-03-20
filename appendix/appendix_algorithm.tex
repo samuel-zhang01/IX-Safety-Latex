@@ -1,0 +1,23 @@
+\section{Training Algorithm}
+\label{app:algorithm}
+
+\begin{algorithm}[H]
+    \caption{Safe-L2D-Fraud Training}
+    \label{alg:training}
+    \begin{algorithmic}[1]
+        \REQUIRE Data $\mathcal{D} = \{(\xx_i, y_i)\}_{i=1}^N$, investigator accuracy $\alpha$, CVaR level $\delta$, confidence threshold $\kappa$, penalty weight $\lambda$
+        \STATE \textbf{Stage 1: Train classifier and estimate uncertainty}
+        \STATE Fit KDE class-conditionals $\hat{p}(x_k | y)$ for DAG-selected features
+        \STATE Compute posteriors $\pi_i$ and entropies $H(\pi_i)$ for all $\xx_i$
+        \STATE Train base classifier $h$ (XGBoost) on $\mathcal{D}$
+        \STATE Calibrate probabilities via isotonic regression
+        \STATE \textbf{Stage 2: Optimise deferral threshold}
+        \FOR{threshold $\tau \in$ grid}
+            \STATE Compute $r_\tau(\xx_i) = \mathbf{1}[H(\pi_i) > \tau] \lor \mathbf{1}[\max_j \sigma_j < \kappa]$
+            \STATE Compute $\widehat{\cvar}_\delta$ on retained predictions $\{i : r_\tau(\xx_i) = 0\}$
+            \STATE Compute $\text{Acc}_{\text{sys}}(\tau)$ using investigator with accuracy $\alpha$
+        \ENDFOR
+        \STATE Select $\tau^* = \argmax_\tau \text{Acc}_{\text{sys}}(\tau) - \lambda \cdot \widehat{\cvar}_\delta(\tau)$
+        \STATE \textbf{return} Classifier $h$, rejector $r_{\tau^*}$
+    \end{algorithmic}
+\end{algorithm}

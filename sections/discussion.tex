@@ -1,0 +1,43 @@
+\section{Discussion and Conclusion}
+\label{sec:discussion}
+\textbf{Limitations.}
+We identify several limitations that are important for interpreting our results.
+
+\textit{(1)~Synthetic investigator.} Our expert model assumes a fixed accuracy of $\alpha = 0.85$, which does not reflect the variability of real investigators, including fatigue, differences in experience, or domain specialisation, although the sensitivity analysis (\Cref{sec:exp_sensitivity}) shows that the gains remain even when accuracy drops to $\alpha = 0.70$.
+
+\textit{(2)~Small dataset.} The evaluation is based on 1{,}000 claims, with 200 in the test set (approximately 49 fraud cases), which limits statistical power. Bootstrap confidence intervals between Safe-L2D-Fraud and the confidence baseline overlap, and individual cost and CVaR numbers rest on very few samples. Cross-validation helps to some extent, but the results may still not generalise to production-scale datasets. Evaluation on larger benchmarks (e.g., IEEE-CIS Fraud Detection, European credit card fraud) is an important next step.
+
+\textit{(3)~Inflated fraud rate.} The 24.7\% base rate is much higher than what is typically seen in production, where fraud rates are usually closer to 5--10\%. At lower base rates, the Bayesian posterior would likely concentrate more strongly on the majority class, which could reduce both the sensitivity of the entropy signal and the deferral rate.
+
+\textit{(4)~Conditional independence.} Assumption~A1 (naive Bayes) may underestimate posterior uncertainty when features are correlated. A copula-based KDE could help address this.
+
+\textit{(5)~Hypothesised DAG.} The causal structure is based on domain knowledge rather than learned directly from data, although this is a common approach in practice \citep{pearl2009causality}.
+
+\textit{(6)~Simulated OPE.} Our off-policy evaluation uses a simulated behaviour policy rather than real historical decisions, which creates a circularity: the reward model $\hat{r}$ and behaviour policy $\pi_b$ are both learned from the same data, violating the standard OPE assumption that $\pi_b$ is known. So this should be seen as a methodological proof of concept, not as a real-world validation.
+
+\textbf{Robustness to distribution shift.}
+Several parts of Safe-L2D-Fraud may be sensitive to distribution shift, which we did not test empirically.
+
+\textit{(7)~Covariate shift on KDE estimates.} The class-conditional densities $\hat{p}(x_k \mid y)$ are estimated from training data. If the feature distribution changes post-deployment, the Bayesian posterior $\pi_F$ can become miscalibrated, causing the entropy signal to over-defer (new legitimate claims look uncertain) or under-defer (new fraud patterns produce confident but wrong posteriors).
+
+\textit{(8)~Prior drift.} The prior $\pi_0$ is fixed from the training set. If the true fraud rate changes over time, that misspecification propagates through every sequential Bayesian update.
+
+\textit{(9)~Adversarial non-stationarity.} Fraud detection operates in an adversarial setting where fraudsters adapt to the deployed system. The DAG topology may hold, but edge strengths (feature predictiveness) can shift. Standard deferral guarantees do not account for this strategic adaptation.
+
+\textit{(10)~Calibration degradation.} Under distribution shift, the isotonic-calibrated probabilities $\sigma_j(g(\xx))$ may become unreliable, causing the confidence branch of the deferral rule to fail silently. Conformal prediction sets offer a more robust alternative under exchangeability.
+
+\textbf{Further limitations.}
+
+\textit{(11)~No online learning.} The deferral policy $r_\tau$ is fixed after training. It does not adapt to new data or learn from investigator feedback. With limited investigator capacity, this becomes a constrained bandit problem that our static framework does not address.
+
+\textit{(12)~Reward misspecification.} The CVaR objective uses 0-1 loss, not the asymmetric costs (FN/FP $\approx$ 5--10$\times$) relevant in deployment. Incorporating asymmetric costs into the CVaR term would require recalibrating $\lambda$ and $\delta$.
+
+\textit{(13)~CVaR sample complexity.} Empirical CVaR is averaged over only ${\approx}20$ tail samples ($\delta{=}0.10$, $N{=}200$). The CVaR gap between Safe-L2D-Fraud (0.923) and the confidence baseline (0.938) is not statistically significant at this sample size.
+
+\textit{(14)~Missing uncertainty baselines.} We did not compare against MC Dropout \citep{gal2016dropout} or deep ensembles \citep{lakshminarayanan2017simple}, which provide deferral signals without the naive Bayes assumption and are well-established in selective prediction.
+
+\textbf{Broader impact.}
+Fraud detection systems can have an uneven impact on vulnerable populations. Deferral offers a safeguard by sending ambiguous cases to human review, which may help reduce algorithmic bias. At the same time, the deferral rate must be matched to investigator capacity. Fairness-aware extensions incorporating equalized odds constraints \citep{madras2018predict} are an important direction.
+
+\textbf{Conclusion.}
+We introduced Safe-L2D-Fraud, a framework for insurance fraud detection that combines a pre-trained classifier with CVaR-guided deferral threshold selection. On a small benchmark dataset, the system reaches 89.5\% accuracy at 64\% coverage, a 7.5 percentage point improvement over standalone XGBoost, though confidence intervals overlap and a simple confidence-threshold baseline achieves comparable performance. We view the primary contribution as the framework design---modular, risk-aware deferral that can be optimised separately from the base classifier---rather than the specific empirical numbers on this dataset. The framework has several clear limitations: it assumes stationarity in an adversarial setting, estimates tail risk from a small sample, lacks comparison to modern uncertainty quantification methods, and has not been tested under distribution shift. Evaluation on larger, more realistic datasets is a critical next step. Other promising directions include: (i)~conformal prediction sets for distribution-free coverage guarantees; (ii)~online deferral with adaptive thresholds and investigator capacity constraints; (iii)~game-theoretic formulations for adversarial robustness; and (iv)~asymmetric cost-aware CVaR objectives. We release our code and dataset references to support reproducibility and future comparison.

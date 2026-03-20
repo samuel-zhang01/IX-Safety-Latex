@@ -1,0 +1,98 @@
+%%%%%%%% ICML 2025 SUBMISSION — Safe Learning to Defer for Insurance Fraud Detection %%%%%%%%
+
+\documentclass{article}
+
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{subfigure}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{float}
+\newcommand{\theHalgorithm}{\arabic{algorithm}}
+
+\usepackage[accepted]{icml2025}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{mathtools}
+\usepackage{amsthm}
+\usepackage[capitalize,noabbrev]{cleveref}
+
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{enumitem}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% THEOREMS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}{Proposition}[section]
+\newtheorem{lemma}{Lemma}[section]
+\newtheorem{corollary}{Corollary}[section]
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[section]
+\newtheorem{assumption}{Assumption}[section]
+\theoremstyle{remark}
+\newtheorem{remark}{Remark}[section]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% CUSTOM COMMANDS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\cvar}{\mathrm{CVaR}}
+\newcommand{\var}{\mathrm{VaR}}
+\newcommand{\deferop}{\textsc{Defer}}
+\newcommand{\xx}{\mathbf{x}}
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\EE}{\mathbb{E}}
+\newcommand{\PP}{\mathbb{P}}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+
+\icmltitlerunning{Safe Learning to Defer for Insurance Fraud Detection}
+
+\begin{document}
+
+\twocolumn[
+\icmltitle{Safe Learning to Defer for Insurance Fraud Detection:\\
+           A Risk-Sensitive Framework}
+
+\icmlsetsymbol{equal}{*}
+
+\begin{icmlauthorlist}
+\icmlauthor{Samuel Zhang}{dept}
+\icmlauthor{Miltiades Georgantzis}{dept}
+\icmlauthor{Sulieman Ibsais}{dept}
+\end{icmlauthorlist}
+
+\icmlaffiliation{dept}{Department of EEE, Imperial College London, London, United Kingdom}
+
+\icmlcorrespondingauthor{Samuel Zhang}{sjz25@ic.ac.uk}
+
+\icmlkeywords{Learning to Defer, Fraud Detection, CVaR, Bayesian Uncertainty, Risk-Sensitive ML}
+
+\vskip 0.3in
+]
+
+\printAffiliationsAndNotice{}
+
+\input{sections/abstract}
+\input{sections/introduction}
+\input{sections/background}
+\input{sections/formulation}
+\input{sections/method}
+\input{sections/experiments}
+\input{sections/related}
+\input{sections/discussion}
+
+\bibliography{references}
+\bibliographystyle{icml2025}
+
+\newpage
+\appendix
+\input{appendix/appendix_math}
+\input{appendix/appendix_data}
+\input{appendix/appendix_hyperparams}
+\input{appendix/appendix_algorithm}
+
+\end{document}
