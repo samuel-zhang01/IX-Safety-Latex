@@ -8,3 +8,4 @@ icml2025/
 .claude/
 *.fdb_latexmk
 *.log
+*.gz

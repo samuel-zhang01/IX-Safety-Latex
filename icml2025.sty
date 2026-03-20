@@ -538,11 +538,11 @@ the offending package(s), or layout-changing commands and try again.
 {\let\thefootnote\relax\footnotetext{\hspace*{-\footnotesep}\ifdefined\isaccepted #1\fi%
 \forloop{@affilnum}{1}{\value{@affilnum} < \value{@affiliationcounter}}{
 \ifcsname @affilname\the@affilnum\endcsname%
-\csname @affilname\the@affilnum\endcsname%
+\textsuperscript{\the@affilnum}\csname @affilname\the@affilnum\endcsname%
 \fi
 }%
 % Corresponding author info removed
-\Notice@String
+\par\Notice@String
 }
 }
 }
