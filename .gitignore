@@ -9,3 +9,4 @@ icml2025/
 *.fdb_latexmk
 *.log
 *.gz
+*/__pycache__/
