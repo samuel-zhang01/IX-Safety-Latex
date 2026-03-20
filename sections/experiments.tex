@@ -61,26 +61,26 @@ We compare against multiple baselines spanning both deferral and non-deferral me
 \label{tab:l2d_results}
 \vskip 0.1in
 \begin{center}
-\begin{small}
+\resizebox{\columnwidth}{!}{%
 \begin{tabular}{lcccc}
 \toprule
 Method & Sys.\ Acc & F1 & CVaR$_{0.1}$ & Defer \\
 \midrule
-XGBoost               & .820 {\tiny[.76,.86]} & .612 {\tiny[.49,.72]} & 1.000 & 0\% \\
-Cost-Sens.\ XGB       & .795 {\tiny[.74,.85]} & .602 {\tiny[.48,.70]} & 1.000 & 0\% \\
-Mozannar-Sontag       & .830 {\tiny[.78,.88]} & .646 {\tiny[.53,.75]} & 1.000 & 0\% \\
-Conf.\ threshold      & .900 {\tiny[.86,.94]} & .792 {\tiny[.69,.87]} & .938 & 23\% \\
-\textbf{Safe-L2D-Fraud} & \textbf{.895} {\tiny[.85,.94]} & .788 {\tiny[.69,.87]} & \textbf{.923} & 36\% \\
+XGBoost               & .810 {\scriptsize[.76,.86]} & .612 {\scriptsize[.49,.72]} & 1.000 & 0\% \\
+Cost-Sens.\ XGB       & .795 {\scriptsize[.74,.85]} & .602 {\scriptsize[.48,.70]} & 1.000 & 0\% \\
+Mozannar-Sontag       & .830 {\scriptsize[.78,.88]} & .646 {\scriptsize[.53,.75]} & 1.000 & 0\% \\
+Conf.\ threshold      & .900 {\scriptsize[.86,.94]} & .792 {\scriptsize[.69,.87]} & .938 & 23\% \\
+\textbf{Safe-L2D-Fraud} & \textbf{.895} {\scriptsize[.85,.94]} & .788 {\scriptsize[.69,.87]} & \textbf{.923} & 36\% \\
 \bottomrule
-\end{tabular}
-\end{small}
+\end{tabular}%
+}
 \end{center}
 \vskip -0.1in
 \end{table}
 
 We highlight three findings. First, the \textit{Mozannar-Sontag baseline achieves 0\% deferral}: only 1.6\% of training samples were assigned to the ``defer'' class, so the model never predicts deferral. This likely reflects our use of XGBoost rather than a neural base model (for which the framework was designed), combined with the small dataset; we cannot claim superiority over a properly tuned end-to-end L2D system.
 
-Second, the \textit{confidence threshold achieves the highest point accuracy} (90.0\%) with only 23\% deferral vs.\ Safe-L2D-Fraud's 89.5\% at 36\%. The CVaR difference ($0.923$ vs.\ $0.938$) is directionally consistent with better tail-risk control but rests on ${\approx}20$ tail samples and is not statistically significant. The principal advantage of Safe-L2D-Fraud is the principled risk-control mechanism rather than raw accuracy.
+Second, the \textit{confidence threshold achieves the highest point accuracy} (90.0\%) with only 23\% deferral vs.\ Safe-L2D-Fraud's 89.5\% at 36\%. The confidence baseline is simpler, defers fewer claims, and matches or exceeds Safe-L2D-Fraud on accuracy. The CVaR difference ($0.923$ vs.\ $0.938$) is directionally consistent with better tail-risk control but rests on ${\approx}13$ tail samples (10\% of $N_r{=}128$ retained claims) and is not statistically significant. At this sample size, the data do not demonstrate a clear empirical advantage of the combined Bayesian-discriminative signal over discriminative confidence alone. The principal advantage of Safe-L2D-Fraud is the principled, modular risk-control mechanism. The CVaR objective provides an explicit knob for trading off coverage and tail risk rather than raw accuracy on this benchmark.
 
 Third, all non-deferral methods hit $\cvar_{0.10} = 1.0$: with ${\approx}18\%$ error rate, the worst decile consists entirely of errors regardless of classifier quality.
 
@@ -116,7 +116,7 @@ The CVaR analysis (\Cref{fig:cvar}) reveals that deferral concentrates in the 0.
 \subsection{Ablation Study}
 \label{sec:exp_ablation}
 
-\Cref{fig:ablation} shows each component's contribution. Removing Bayesian entropy drops the deferral rate from 36\% to 7\% and accuracy to 82.5\%; removing CVaR monitoring drops accuracy to 82.5\% at 26\% deferral. Because the variants operate at different deferral rates, accuracy differences may partly reflect the amount of deferral rather than component quality; a comparison at fixed coverage would be more informative.
+\Cref{fig:ablation} shows each component's contribution. Removing Bayesian entropy drops the deferral rate from 36\% to 7\% and accuracy to 86.0\%; removing CVaR monitoring drops accuracy to 82.5\% at 18.5\% deferral. An important observation is that hese variants operate at very different deferral rates (7\%, 18.5\%, and 36\%), so the accuracy differences partly reflect how much is deferred rather than isolating component quality. A comparison at fixed coverage (e.g., all methods constrained to 80\% coverage) would be necessary to disentangle the contribution of each component from the effect of deferral volume; we leave this controlled comparison to future work.
 
 \begin{figure}[H]
     \centering
@@ -135,7 +135,7 @@ In fraud detection, missing a fraudulent claim (FN) is usually 5--10$\times$ mor
 \label{tab:cost}
 \vskip 0.1in
 \begin{center}
-\begin{small}
+\resizebox{\columnwidth}{!}{%
 \begin{tabular}{lcccc}
 \toprule
 FN/FP ratio & Safe-L2D & XGBoost & Conf.\ Base & CS-XGB \\
@@ -145,8 +145,8 @@ FN/FP ratio & Safe-L2D & XGBoost & Conf.\ Base & CS-XGB \\
 5  & \textbf{0.305} & 0.440 & 0.352 & 0.485 \\
 10 & \textbf{0.555} & 0.765 & 0.610 & 0.835 \\
 \bottomrule
-\end{tabular}
-\end{small}
+\end{tabular}%
+}
 \end{center}
 \vskip -0.1in
 \end{table}

@@ -4,7 +4,7 @@
 \subsection{Fraud Detection as Learning to Defer}
 \label{sec:fraud_l2d}
 
-We model insurance fraud detection as a learning-to-defer problem. Each claim $\xx \in \mathcal{X} \subseteq \RR^d$ has a binary label $y \in \{0, 1\}$ (legitimate or fraudulent). The system must choose one of three actions: $a \in \{\text{clear}, \text{flag}, \deferop\}$. When the system defers, a human fraud investigator $M$ examines the claim with accuracy parameterised by $\alpha \in (0, 1]$.
+We model insurance fraud detection as a learning-to-defer problem. Each claim $\xx \in \mathcal{X} \subseteq \RR^d$ has a binary label $y \in \{0, 1\}$ (legitimate or fraudulent). The system must choose one of three actions: $a \in \{\text{clear}, \text{flag}, \text{deffer}\}$. When the system defers, a human fraud investigator $M$ examines the claim with accuracy parameterised by $\alpha \in (0, 1]$.
 
 The \textit{system-level} prediction is:
 \begin{equation}
@@ -55,13 +55,4 @@ The proof is given in \Cref{app:math}. For 0-1 loss, the condition simplifies: s
 \subsection{Connection to Constrained Optimisation}
 \label{sec:cmdp}
 
-The deferral objective in \Cref{eq:cvar_l2d} can be viewed as the Lagrangian relaxation of a constrained problem. Define:
-\begin{equation}
-\begin{aligned}
-\max_{r} \;& \mathrm{Acc}_{\mathrm{sys}}(h, r) \\
-\text{s.t.} \;& \cvar_\delta\bigl[\ell(\xx, y, h(\xx)) \cdot \mathbf{1}\{r(\xx) = 0\}\bigr] \leq \epsilon
-\end{aligned}
-\label{eq:cmdp}
-\end{equation}
-
-Under Slater's condition (which holds when there exists a feasible $r$ achieving $\cvar_\delta < \epsilon$, e.g., by deferring all claims), strong duality gives $\max_r \min_{\lambda \geq 0} \{\mathrm{Acc}_{\mathrm{sys}} + \lambda(\epsilon - \cvar_\delta)\} = \min_{\lambda \geq 0} \max_r \{\mathrm{Acc}_{\mathrm{sys}} + \lambda(\epsilon - \cvar_\delta)\}$, and the optimal $\lambda^*$ recovers the constraint boundary. Thus, \Cref{eq:cvar_l2d} with a specific $\lambda$ corresponds to a particular risk tolerance $\epsilon$, connecting our framework to constrained optimisation \citep{altman1999constrained}. In the sequential setting where claims arrive over time and investigator capacity is finite, this extends to a constrained MDP, motivating online deferral with budget constraints as future work.
+The deferral objective in \Cref{eq:cvar_l2d} can be viewed as the Lagrangian relaxation of a constrained problem. Under Slater's condition (which holds when there exists a feasible $r$ achieving $\cvar_\delta < \epsilon$, e.g., by deferring all claims), strong duality gives $\max_r \min_{\lambda \geq 0} \{\mathrm{Acc}_{\mathrm{sys}} + \lambda(\epsilon - \cvar_\delta)\} = \min_{\lambda \geq 0} \max_r \{\mathrm{Acc}_{\mathrm{sys}} + \lambda(\epsilon - \cvar_\delta)\}$, and the optimal $\lambda^*$ recovers the constraint boundary. Thus, \Cref{eq:cvar_l2d} with a specific $\lambda$ corresponds to a particular risk tolerance $\epsilon$, connecting our framework to constrained optimisation \citep{altman1999constrained}. In the sequential setting where claims arrive over time and investigator capacity is finite, this extends to a constrained MDP, motivating online deferral with budget constraints as future work.

@@ -24,7 +24,7 @@ U_{\text{Bayes}}(\xx)
 \end{aligned}
 \label{eq:entropy_defer}
 \end{equation}
-This is maximised at $\pi_F = 0.5$ (maximum ambiguity) and decreases as $\pi_F$ moves toward 0 or 1. Claims with $U_{\text{Bayes}}(\xx) > \tau$ are candidates for deferral. \Cref{fig:class_cond} shows substantial class-conditional overlap in claim amount and policy age---the ambiguous region where deferral is most valuable.
+This is maximised at $\pi_F = 0.5$ (maximum ambiguity) and decreases as $\pi_F$ moves toward 0 or 1. Claims with $U_{\text{Bayes}}(\xx) > \tau$ are candidates for deferral. \Cref{fig:class_cond} shows substantial class-conditional overlap in claim amount and policy age, the ambiguous region where deferral is most valuable.
 
 \begin{figure}[H]
     \centering
@@ -52,12 +52,21 @@ where $\ell_{(1)} \geq \ell_{(2)} \geq \cdots$ are the sorted 0-1 losses of the 
 \subsection{Domain-Informed Feature Selection}
 \label{sec:method_causal}
 
-Using all features for Bayesian uncertainty risks deferring on spurious correlations that shift post-deployment. We build a domain-informed DAG (\Cref{fig:dag}) representing expected causal relationships between features and fraud \citep{pearl2009causality}, then retain only features with both a direct path to $y$ in the DAG \textit{and} positive KL divergence:
+Using all available features for Bayesian uncertainty estimation risks deferring on spurious correlations that do not generalise. A feature may be statistically predictive on the training set yet carry no stable relationship to fraud. For instance, a postcode may correlate with fraud in historical data due to a temporary fraud ring, but this association will vanish once the ring is disrupted. Deferral decisions based on such features would degrade silently under distribution shift.
+
+\textbf{Why a DAG.} We address this by encoding domain knowledge as a directed acyclic graph (\Cref{fig:dag}) over the feature space, drawing on the principle from causal inference that variables connected to the outcome through a structural mechanism are more robust to distributional change than those connected only through statistical association \citep{pearl2009causality, peters2016causal, scholkopf2021toward}. The DAG offers three practical advantages:
+\begin{enumerate}[nosep,leftmargin=*]
+    \item \textit{Resistance to distribution shift.} Causal or structurally motivated features (e.g., claim-to-premium ratio, incident severity) reflect mechanisms that persist even as the population changes. A high ratio of claimed amount to premium is suspicious regardless of whether the claimant demographic shifts. In contrast, purely data-driven feature selection (e.g., mutual information, permutation importance) captures whatever correlations happen to exist in the training set, including confounded or transient ones. The DAG topology encodes which relationships are expected to be \textit{structurally stable}, so that the uncertainty signal degrades gracefully rather than catastrophically when marginal feature distributions shift.
+    \item \textit{Ease of elicitation.} Domain experts: fraud investigators and actuaries can articulate which features they consider causally relevant to fraud without needing to specify functional forms or parameter values. The DAG is a natural language for this knowledge: ``incident severity influences claim amount'' is easy to encode as a directed edge. This makes the framework readily adaptable to new fraud domains (e.g., health insurance, workers' compensation) by swapping the DAG while keeping the rest of the pipeline unchanged.
+    \item \textit{Dimensionality control.} Bayesian posterior updating under the naive Bayes assumption (A1) accumulates approximation error with each additional feature, particularly when features are correlated. Restricting to DAG-validated features limits the number of sequential updates, reducing compounding error in the posterior $\pi_F$.
+\end{enumerate}
+
+\noindent We retain only features that satisfy a \textit{dual criterion}: they must have a direct path to $y$ in the DAG \textit{and} exhibit positive empirical discriminative power, measured by KL divergence between the class-conditional densities:
 \begin{equation}
     D_{\text{KL}}^{(k)} = \int \hat{p}(x_k | y{=}1) \log \frac{\hat{p}(x_k | y{=}1)}{\hat{p}(x_k | y{=}0)} \, dx_k.
     \label{eq:kl_feature}
 \end{equation}
-This dual criterion selects features that are both structurally plausible and empirically discriminative. We do not claim to identify true causal parents; the DAG is an interpretable prior, and its advantage over standard feature selection (e.g., mutual information) has not been tested in controlled comparison.
+Features that are structurally plausible but empirically uninformative ($D_{\text{KL}}^{(k)} \approx 0$) are excluded, as they add noise to the posterior without improving the deferral signal. We do not claim to identify true causal parents of fraud; the DAG is an interpretable prior that encodes the practitioner's best understanding of the domain. Its advantage over purely data-driven feature selection (e.g., mutual information ranking) has not been tested in a controlled comparison where this is an important direction for future work.
 
 \begin{figure}[H]
     \centering
