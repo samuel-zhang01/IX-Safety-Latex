@@ -36,9 +36,20 @@ where the last inequality uses $k' \leq k$ and the fact that adding terms from a
 \subsection{Lagrangian Duality}
 
 The CVaR-constrained deferral problem (\Cref{eq:cmdp}) admits a Lagrangian relaxation. Define the constrained problem:
+
 \begin{equation}
-    \max_{r} \; \mathrm{Acc}_{\mathrm{sys}}(h, r) \quad \text{s.t.} \quad \cvar_\delta\bigl[\ell(\xx, y, h(\xx)) \cdot \mathbf{1}\{r(\xx) = 0\}\bigr] \leq \epsilon.
+\begin{aligned}
+\max_{r} \;& \mathrm{Acc}_{\mathrm{sys}}(h, r) \\
+\text{s.t.} \;& \cvar_\delta\bigl[\ell(\xx, y, h(\xx)) \cdot \mathbf{1}\{r(\xx) = 0\}\bigr] \leq \epsilon
+\end{aligned}
+\label{eq:cmdp}
 \end{equation}
+
+
+% The CVaR-constrained deferral problem (\Cref{eq:cmdp}) admits a Lagrangian relaxation. Define the constrained problem:
+% \begin{equation}
+%     \max_{r} \; \mathrm{Acc}_{\mathrm{sys}}(h, r) \quad \\\text{s.t.} \quad \cvar_\delta\bigl[\ell(\xx, y, h(\xx)) \cdot \mathbf{1}\{r(\xx) = 0\}\bigr] \leq \epsilon.
+% \end{equation}
 
 The Lagrangian is:
 \[
